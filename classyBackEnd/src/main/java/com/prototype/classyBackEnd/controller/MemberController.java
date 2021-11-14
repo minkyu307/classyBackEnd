@@ -24,7 +24,7 @@ public class MemberController {
     private final MemberService memberService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @GetMapping(value = "/testHello")
+    @GetMapping(value = "/Hello")
     public ResponseEntity<String> hello(){
         return ResponseEntity.ok().body("Test Good!!!");
     }
