@@ -24,6 +24,11 @@ public class MemberController {
     private final MemberService memberService;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    @GetMapping(value = "/testHello")
+    public ResponseEntity<String> hello(){
+        return ResponseEntity.ok().body("Test Good!!!");
+    }
+
     @PostMapping(value = "/member/kakaoJoin")
     public ResponseEntity<Map<String,String>> joinKakaoMember(@RequestBody Member member){
 
