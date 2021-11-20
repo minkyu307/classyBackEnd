@@ -1,5 +1,6 @@
 package com.prototype.classyBackEnd.domain;
 
+import com.prototype.classyBackEnd.vo.CreationRequestMemberVO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,4 +33,11 @@ public class Member {
 
     private int authStatus;
 
+    public void insertCreationRequestMemberVO(CreationRequestMemberVO crm){
+        this.kakaoId=crm.getKakaoId();
+        this.email=crm.getEmail();
+        this.password=crm.getPassword();
+        this.memberName= crm.getMemberName();
+        this.classyNickName= crm.getClassyNickName();
+    }
 }
