@@ -9,10 +9,13 @@ import java.util.List;
 public interface MemberService {
     Member save(Member member);
     Member findOneByKakaoId(Long id);
-    boolean kakaoMemberExist(Member member);
-    boolean emailMemberExist(Member member);
-    boolean classyNickNameExist(Member member);
+    boolean kakaoMemberExist(Long id);
+    String emailMemberExistOrNotAuthed(String email);
+    boolean classyNickNameExist(String nickName);
     void emailAuth(Member member) throws MessagingException, UnsupportedEncodingException;
-    public void updateAuthStatus(String email)throws Exception;
+    void updateAuthStatus(String email)throws Exception;
     boolean emailAuthCorrect(Member member);
+    void deleteMember(Member member);
+    Member findOneByEmail(String email);
+    void persistAndClear();
 }

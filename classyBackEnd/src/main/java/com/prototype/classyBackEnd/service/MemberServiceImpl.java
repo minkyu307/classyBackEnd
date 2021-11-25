@@ -35,8 +35,18 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public boolean kakaoMemberExist(Member member) {
-        List<Member> members = memberDao.findMembersByKakaoId(member);
+    public Member findOneByEmail(String email) {
+        return memberDao.findOneByEmail(email).get();
+    }
+
+    @Override
+    public void persistAndClear() {
+        memberDao.persistAndClear();
+    }
+
+    @Override
+    public boolean kakaoMemberExist(Long id) {
+        List<Member> members = memberDao.findMembersByKakaoId(id);
         if(members.isEmpty()){
             return false;
         }
@@ -44,17 +54,22 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public boolean emailMemberExist(Member member) {
-        List<Member> members = memberDao.findMembersByEmail(member);
+    public String emailMemberExistOrNotAuthed(String email) {
+        List<Member> members = memberDao.findMembersByEmail(email);
+        String temp="Exist";
         if(members.isEmpty()){
-            return false;
+            temp="NotExist";
         }
-        return true;
+        else{
+            if(members.get(0).getAuthStatus()==0)
+                temp="NotAuthed";
+        }
+        return temp;
     }
 
     @Override
-    public boolean classyNickNameExist(Member member) {
-        List<Member> members = memberDao.findMembersByClassyNickName(member);
+    public boolean classyNickNameExist(String nickName) {
+        List<Member> members = memberDao.findMembersByClassyNickName(nickName);
         if(members.isEmpty()){
             return false;
         }
@@ -88,4 +103,10 @@ public class MemberServiceImpl implements MemberService{
         }
         return false;
     }
+
+    @Override
+    public void deleteMember(Member member) {
+        memberDao.deleteMemberByEmail(member);
+    }
+
 }

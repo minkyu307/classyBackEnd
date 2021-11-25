@@ -23,21 +23,25 @@ public class MemberDao {
         return Optional.ofNullable(em.createQuery("select m from Member m where m.kakaoId=?1",Member.class).setParameter(1,id).getSingleResult());
     }
 
-    public List<Member> findMembersByKakaoId(Member member){
+    public Optional<Member> findOneByEmail(String email){
+        return Optional.ofNullable(em.createQuery("select m from Member m where m.email=?1",Member.class).setParameter(1,email).getSingleResult());
+    }
+
+    public List<Member> findMembersByKakaoId(Long id){
         return em.createQuery("select m from Member m where m.kakaoId=?1")
-                .setParameter(1,member.getKakaoId())
+                .setParameter(1,id)
                 .getResultList();
     }
 
-    public List<Member> findMembersByEmail(Member member){
+    public List<Member> findMembersByEmail(String email){
         return em.createQuery("select m from Member m where m.email=?1")
-                .setParameter(1,member.getEmail())
+                .setParameter(1,email)
                 .getResultList();
     }
 
-    public List<Member> findMembersByClassyNickName(Member member){
+    public List<Member> findMembersByClassyNickName(String nickName){
         return em.createQuery("select m from Member m where m.classyNickName=?1")
-                .setParameter(1,member.getClassyNickName())
+                .setParameter(1,nickName)
                 .getResultList();
     }
 
@@ -54,5 +58,15 @@ public class MemberDao {
         if (members.isEmpty())
             return false;
         return true;
+    }
+
+    public void deleteMemberByEmail(Member member){
+        em.createQuery("delete from Member m where m.email=?1")
+                .setParameter(1,member.getEmail()).executeUpdate();
+    }
+
+    public void persistAndClear(){
+        em.flush();
+        em.clear();
     }
 }

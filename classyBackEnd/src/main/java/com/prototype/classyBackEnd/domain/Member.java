@@ -34,10 +34,11 @@ public class Member {
     private int authStatus;
 
     public void insertCreationRequestMemberVO(CreationRequestMemberVO crm){
-        this.kakaoId=crm.getKakaoId();
-        this.email=crm.getEmail();
-        this.password=crm.getPassword();
-        this.memberName= crm.getMemberName();
-        this.classyNickName= crm.getClassyNickName();
+        this.setKakaoId(crm.getKakaoId());
+        this.setEmail(crm.getEmail());
+        this.setPassword(crm.getPassword());
+        this.setMemberName(crm.getMemberName());
+        this.setClassyNickName(crm.getClassyNickName());
+        this.setAuthKey(crm.getAuthKey());
     }
 }

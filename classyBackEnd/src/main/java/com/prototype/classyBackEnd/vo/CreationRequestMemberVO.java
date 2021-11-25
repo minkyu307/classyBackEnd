@@ -13,6 +13,8 @@ public class CreationRequestMemberVO {
 
     private Long kakaoId;
 
+    private String authKey;
+
     @Email(message = "Wrong Email Type")
     @NotBlank(message = "Email No Value")
     private String email;
