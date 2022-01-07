@@ -54,34 +54,6 @@ public class MemberController {
         memberService.save(member);
         map.put("SuccessCode","KakaoJoinSuccess");
 
-        /*//VO에 지정된 입력 오류 검출
-        if(errors.hasErrors()){
-            for(FieldError value:errors.getFieldErrors()){
-                map.put("ErrorCode",value.getDefaultMessage());
-            }
-            return ResponseEntity.badRequest().body(map);
-        }
-        //카카오아이디 중복
-        else if(memberService.kakaoMemberExist(member.getKakaoId())){
-            map.put("ErrorCode","KakaoIdOverlap");
-            return ResponseEntity.internalServerError().body(map);
-        }
-        //이메일중복
-        else if(memberService.emailMemberExistOrNotAuthed(member.getEmail()).equals("Exist")){
-            map.put("ErrorCode","EmailOverlap");
-            return ResponseEntity.internalServerError().body(map);
-        }
-        //닉네임 중복
-        if(memberService.classyNickNameExist(member.getClassyNickName())){
-            map.put("ErrorCode","ClassyNickNameOverlap");
-            return ResponseEntity.internalServerError().body(map);
-        }
-        else {
-            member.setAuthStatus(1);
-            memberService.save(member);
-            map.put("SuccessCode","KakaoJoinSuccess");
-        }*/
-
         return ResponseEntity.ok().body(map);
     }
 

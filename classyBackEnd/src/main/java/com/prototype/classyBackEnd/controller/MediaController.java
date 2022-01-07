@@ -6,13 +6,9 @@ import com.prototype.classyBackEnd.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,24 +19,36 @@ public class MediaController {
 
     private final MemberService memberService;
     private final S3Component s3Component;
+    private Map<String, String> strStrMap = new LinkedHashMap<>();
 
-    @PostMapping(value = "/profileImageUpload")
-    public ResponseEntity<Map<String, String>> imageUpload(@RequestParam("image") MultipartFile multipartFile,
+
+    @GetMapping(value = "/uploadProfileImage")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("media") MultipartFile file,
                                                            @RequestParam("classyNickName") String classyNickName) throws Exception {
 
-        Map<String, String> map = new LinkedHashMap<>();
+        strStrMap.clear();
         Member member = memberService.findOneByClassyNickName(classyNickName);
 
-        s3Component.uploadToProject(multipartFile,"classyImage", member);
+        s3Component.uploadMediaToS3(file, "classyImage/", member);
 
-        map.put("SuccessCode","ImageUploadSuccess");
-        return ResponseEntity.ok().body(map);
+        strStrMap.put("SuccessCode", "ProfileImageUploadSuccess");
+        return ResponseEntity.ok().body(strStrMap);
     }
 
-    @GetMapping(value = "/image/getOneImage")
-    public ResponseEntity<byte[]> download() throws IOException {
-        return s3Component.getOneFile();
+    @GetMapping(value = "/uploadVideo")
+    public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("media") MultipartFile file,
+                                                           @RequestParam("classyNickName") String classyNickName) throws Exception {
+
+        strStrMap.clear();
+        Member member = memberService.findOneByClassyNickName(classyNickName);
+
+        s3Component.uploadMediaToS3(file, "", member);
+
+        strStrMap.put("SuccessCode", "VideoUploadSuccess");
+        return ResponseEntity.ok().body(strStrMap);
     }
+
+
 
     @GetMapping(value = "/profileImageDownload")
     public ResponseEntity<Map<String,byte[]>> getProfileImage(@RequestParam("classyNickName")String classyNickName) throws Exception{
@@ -49,4 +57,5 @@ public class MediaController {
 
         return s3Component.getProfileImageByMember(member);
     }
+
 }

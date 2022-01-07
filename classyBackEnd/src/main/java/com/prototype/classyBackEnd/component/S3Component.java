@@ -4,27 +4,22 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import com.prototype.classyBackEnd.domain.Member;
-import com.prototype.classyBackEnd.domain.S3file;
+import com.prototype.classyBackEnd.domain.Video;
 import com.prototype.classyBackEnd.service.MemberService;
-import com.prototype.classyBackEnd.service.S3fileService;
+import com.prototype.classyBackEnd.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLEncoder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Log4j2
@@ -34,85 +29,76 @@ public class S3Component {
 
     private final AmazonS3Client amazonS3Client;
     private final MemberService memberService;
-    private final S3fileService s3fileService;
+    private final VideoService videoService;
 
-    @Value("${cloud.aws.s3.bucket}")
-    public String bucket;  // S3 버킷 이름
+    @Value("${cloud.aws.s3.inputMovOrMp4Bucket}")
+    public String inputMovOrMp4Bucket;  // S3 버킷 이름
 
-    //1
-    public String uploadToProject(MultipartFile multipartFile, String dirName, Member member) throws IOException {
-        File uploadFile = convert(multipartFile)  // 파일 변환할 수 없으면 에러
-                .orElseThrow(() -> new IllegalArgumentException("FileConvertFail"));
+    @Value("${cloud.aws.s3.classy-bucket}")
+    public String classyBucket;
 
-        return uploadToS3(uploadFile, dirName, member);
-    }
+    //미디어파일을 s3버킷에 저장
+    public void uploadMediaToS3(MultipartFile file, String dirName, Member member) throws Exception{
 
-    //3 S3로 파일 업로드하기
-    private String uploadToS3(File uploadFile, String dirName, Member member) {
-        String fileName = dirName + "/" + UUID.randomUUID() + "\\+" + uploadFile.getName();   // S3에 저장된 파일 이름
+        String fileName = createFileName(file.getOriginalFilename(), dirName);
 
-        //Member에 파일 이름 저장
-        member.setProfileImage(fileName);
-        memberService.save(member);
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(file.getSize());
+        objectMetadata.setContentType(file.getContentType());
 
-        /*S3file s3file = new S3file();
-        s3file.setFileName(fileName);
-        s3fileService.save(s3file);*/
+        log.info("type={}",file.getContentType());
 
-        String uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
-        removeNewFile(uploadFile);
-        return uploadImageUrl;
-    }
-
-    //4 S3로 업로드
-    private String putS3(File uploadFile, String fileName) {
-        amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, uploadFile).withCannedAcl(CannedAccessControlList.PublicRead));
-        return amazonS3Client.getUrl(bucket, fileName).toString();
-    }
-
-    //5 로컬에 저장된 이미지 지우기
-    private void removeNewFile(File targetFile) {
-        if (targetFile.delete()) {
-            log.info("File delete success");
-            return;
+        try(InputStream inputStream = file.getInputStream()) {
+            uploadFile(inputStream, objectMetadata, fileName);
+            saveMediaToDB(file.getContentType(), fileName, member);
         }
-        log.info("File delete fail");
-    }
-
-    //2 로컬에 파일 업로드 하기
-    private Optional<File> convert(MultipartFile file) throws IOException {
-        File convertFile = new File(System.getProperty("user.dir") + "/" + file.getOriginalFilename());
-        if (convertFile.createNewFile()) { // 바로 위에서 지정한 경로에 File이 생성됨 (경로가 잘못되었다면 생성 불가능)
-            try (FileOutputStream fos = new FileOutputStream(convertFile)) { // FileOutputStream 데이터를 파일에 바이트 스트림으로 저장하기 위함
-                fos.write(file.getBytes());
-            }
-            return Optional.of(convertFile);
+        catch (IOException e){
+            throw new IOException("fileConvertFail");
         }
-        return Optional.empty();
     }
 
-    //s3버킷에 있는 파일 다운로드하기
-    public ResponseEntity<byte[]> getOneFile() throws IOException {
+    //미디어 파일 이름을 알맞는 db에 저장
+    private void saveMediaToDB(String type, String fileName, Member member) throws IOException {
 
-        List<S3file> s3files = s3fileService.getAll();
-        String storedFileName = s3files.get(0).getFileName();
-        log.info("storedFileName = {}",storedFileName);
-
-        S3Object s3Object = amazonS3Client.getObject(new GetObjectRequest(bucket,storedFileName));
-        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
-        byte[] bytes = IOUtils.toByteArray(objectInputStream);
-
-        String fileName = URLEncoder.encode(storedFileName,"UTF-8").substring(56);
-        log.info("filename={}",fileName);
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.IMAGE_JPEG);
-        httpHeaders.setContentLength(bytes.length);
-        httpHeaders.setContentDispositionFormData("attachment", fileName);
-
-        return ResponseEntity.ok().headers(httpHeaders).body(bytes);
+        if(type.equals("video/mp4")||type.equals("video/quicktime")){
+            Video video = new Video();
+            video.setMember(member);
+            video.setTitle(fileName);
+            video.setViews(0L);
+            video.setUploadDate(LocalDateTime.now().withNano(0));
+            videoService.save(video);
+        }
+        else if (type.equals("image/jpeg")||type.equals("image/png")){
+            member.setProfileImage(fileName);
+            memberService.save(member);
+        }
+        else throw new IOException("NotSupportedFileType");
     }
 
+    //목표 폴더 + 유니크한 이름 + 원래 파일 이름
+    private String createFileName(String originalFileName, String dirName) throws Exception {
+        return dirName+UUID.randomUUID().toString().concat(originalFileName);
+    }
+
+    //실제 s3업로드 메소드
+    private void uploadFile(InputStream inputStream, ObjectMetadata objectMetadata, String fileName){
+        String type = objectMetadata.getContentType();
+        if(type.equals("image/jpeg")||type.equals("image/png")){
+            amazonS3Client.putObject(new PutObjectRequest(classyBucket, fileName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        }
+        else {
+            amazonS3Client.putObject(new PutObjectRequest(inputMovOrMp4Bucket, fileName, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        }
+    }
+
+    /*//업로드 후 URL 추출
+    private String getFileUrl(String fileName){
+        return amazonS3Client.getUrl(bucket,fileName).toString();
+    }*/
+
+    //회원의 프로필 이미지 전송
     public ResponseEntity<Map<String,byte[]>> getProfileImageByMember(Member member) throws Exception{
 
         Map<String,byte[]> map = new LinkedHashMap<>();
@@ -126,46 +112,21 @@ public class S3Component {
         }
 
         //s3에서 이미지파일을 불러와 byte로 변환
-        S3Object s3Object = amazonS3Client.getObject(new GetObjectRequest(bucket,storedFileName));
+        S3Object s3Object = amazonS3Client.getObject(new GetObjectRequest(classyBucket,storedFileName));
         S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
         byte[] bytes = IOUtils.toByteArray(objectInputStream);
 
         //이미지 원래 이름만 추출
-        String fileName = URLEncoder.encode(storedFileName,"UTF-8").substring(56);
+        String fileName = URLEncoder.encode(storedFileName,"UTF-8").substring(53);
 
-        //이미지만 다운로드할때 헤더 설정
-        /*HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.IMAGE_JPEG);
-        httpHeaders.setContentLength(bytes.length);
-        httpHeaders.setContentDispositionFormData("attachment", fileName);*/
-
-        //이미지와 텍스트를 동시에 Multipart 형식으로 받고싶은데 여기를 잘 모르겠네요
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
-        httpHeaders.setContentDispositionFormData("attachment",fileName);
-
-        map.put(member.getClassyNickName(),bytes);
-        return ResponseEntity.ok().headers(httpHeaders).body(map);
-    }
-
-    /*public byte[] recieveOneImage() throws IOException {
-
-        List<S3file> s3files = s3fileService.getAll();
-        String storedFileName = s3files.get(0).getFileName();
-        log.info("storedFileName = {}",storedFileName);
-
-        S3Object s3Object = amazonS3Client.getObject(new GetObjectRequest(bucket,storedFileName));
-        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
-        byte[] bytes = IOUtils.toByteArray(objectInputStream);
-
-        String fileName = URLEncoder.encode(storedFileName,"UTF-8").substring(56);
-        log.info("filename={}",fileName);
-
+        //헤더 설정
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.IMAGE_JPEG);
         httpHeaders.setContentLength(bytes.length);
         httpHeaders.setContentDispositionFormData("attachment", fileName);
 
-        return new ResponseEntity<>(bytes, httpHeaders, HttpStatus.OK);
-    }*/
+        map.put(member.getClassyNickName(),bytes);
+        return ResponseEntity.ok().headers(httpHeaders).body(map);
+    }
+
 }

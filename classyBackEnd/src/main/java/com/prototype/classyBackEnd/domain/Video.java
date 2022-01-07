@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,7 +25,9 @@ public class Video {
     private Long views;
 
     @Column(nullable = false)
-    private Date uploadDate;
+    private LocalDateTime uploadDate;
+
+    private String thumbNailImage;
 
     @ManyToOne
     @JoinColumn(name = "uploader_id")
