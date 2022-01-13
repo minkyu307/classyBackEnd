@@ -5,6 +5,4 @@ privatekey.ppk
 publickey
 classy.pem
 .gradle
-
-
-
+out/

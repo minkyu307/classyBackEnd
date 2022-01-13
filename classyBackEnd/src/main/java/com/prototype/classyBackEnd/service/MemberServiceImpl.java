@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,6 +88,7 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
+    @Async
     public void emailAuth(Member member) throws MessagingException, UnsupportedEncodingException {
         String key = tempKey.getKey(10,false);
         String htmlContent = emailHtmlContentAppendAuthkey(key);
