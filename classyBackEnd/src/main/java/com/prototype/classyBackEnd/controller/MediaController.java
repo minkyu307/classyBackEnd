@@ -22,8 +22,8 @@ public class MediaController {
     private Map<String, String> strStrMap = new LinkedHashMap<>();
 
 
-    @GetMapping(value = "/uploadProfileImage")
-    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("media") MultipartFile file,
+    @GetMapping(value = "/upload/profileImage")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("img") MultipartFile file,
                                                            @RequestParam("classyNickName") String classyNickName) throws Exception {
 
         strStrMap.clear();
@@ -35,8 +35,8 @@ public class MediaController {
         return ResponseEntity.ok().body(strStrMap);
     }
 
-    @GetMapping(value = "/uploadVideo")
-    public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("media") MultipartFile file,
+    @GetMapping(value = "/upload/video")
+    public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("video") MultipartFile file,
                                                            @RequestParam("classyNickName") String classyNickName) throws Exception {
 
         strStrMap.clear();
@@ -50,8 +50,8 @@ public class MediaController {
 
 
 
-    @GetMapping(value = "/profileImageDownload")
-    public ResponseEntity<Map<String,byte[]>> getProfileImage(@RequestParam("classyNickName")String classyNickName) throws Exception{
+    @GetMapping(value = "/download/profileImage")
+    public ResponseEntity<byte[]> getProfileImage(@RequestParam("classyNickName")String classyNickName) throws Exception{
 
         Member member = memberService.findOneByClassyNickName(classyNickName);
 

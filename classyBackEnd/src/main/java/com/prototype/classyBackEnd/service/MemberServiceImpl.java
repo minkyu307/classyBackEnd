@@ -5,10 +5,14 @@ import com.prototype.classyBackEnd.dao.MemberDao;
 import com.prototype.classyBackEnd.domain.Member;
 import com.prototype.classyBackEnd.handler.MailHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.persistence.EntityManager;
 import java.io.IOException;
@@ -85,13 +89,14 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public void emailAuth(Member member) throws MessagingException, UnsupportedEncodingException {
         String key = tempKey.getKey(10,false);
+        String htmlContent = emailHtmlContentAppendAuthkey(key);
+
         member.setAuthKey(key);
         memberDao.save(member);
+
         MailHandler sendMail = new MailHandler(javaMailSender);
-        sendMail.setSubject("회원가입 서비스 이메일 인증 입니다.]");
-        sendMail.setText(new StringBuffer()
-                .append("<h1>가입 메일인증 입니다</h1>")
-                .append("<h2>인증코드 : "+key+"</h2>").toString());
+        sendMail.setSubject("회원가입 서비스 이메일 인증 입니다.");
+        sendMail.setText(htmlContent);
         sendMail.setFrom("holli307@gmail.com", "testmail");
         sendMail.setTo(member.getEmail());
         sendMail.send();
@@ -115,4 +120,25 @@ public class MemberServiceImpl implements MemberService{
         memberDao.deleteMemberByEmail(member);
     }
 
+    public String emailHtmlContentAppendAuthkey(String key){
+        return "<div style=\"font-family: 'Apple SD Gothic Neo', 'sans-serif' !important; width: 540px; height: 600px; border-top: 4px solid lightgreen; margin: 100px auto; padding: 30px 0; box-sizing: border-box;\">\n" +
+                "\t<h1 style=\"margin: 0; padding: 0 5px; font-size: 28px; font-weight: 400;\">\n" +
+                "\t\t<span style=\"font-size: 15px; margin: 0 0 10px 3px;\">CLASSY</span><br />\n" +
+                "\t\t<span style=\"color: lightgreen;\">메일 인증</span> 안내입니다.\n" +
+                "\t</h1>\n" +
+                "\t<p style=\"font-size: 16px; line-height: 26px; margin-top: 50px; padding: 0 5px;\">\n" +
+                "\t\t안녕하세요.<br />\n" +
+                "\t\tCLASSY에 가입해 주셔서 진심으로 감사드립니다.<br />\n" +
+                "\t\t아래 <b style=\"color: lightgreen;\">'인증 코드'</b> 를 CLASSY앱의 '인증 코드 입력'란에 입력하여<br/> 인증을 진행해주세요.<br />\n" +
+                "\t\t감사합니다.\n" +
+                "\t</p>\n" +
+                "\n" +
+                "\t<p style=\"font-size: 16px; margin: 40px 5px 20px; line-height: 28px;\">\n" +
+                "\t\t인증 코드: <br />\n" +
+                "\t\t<span style=\"font-size: 24px;\">"+key+"</span>\n" +
+                "\t</p>\n" +
+                "\t\n" +
+                "\t\n" +
+                "</div>";
+    }
 }

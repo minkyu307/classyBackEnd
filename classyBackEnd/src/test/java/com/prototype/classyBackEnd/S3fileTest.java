@@ -6,8 +6,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
 import com.prototype.classyBackEnd.component.S3Component;
-import com.prototype.classyBackEnd.domain.S3file;
-import com.prototype.classyBackEnd.service.S3fileService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +22,6 @@ import java.util.List;
 @SpringBootTest
 public class S3fileTest {
 
-    @Autowired
-    private S3fileService s3fileService;
     @Autowired
     private AmazonS3Client amazonS3Client;
 

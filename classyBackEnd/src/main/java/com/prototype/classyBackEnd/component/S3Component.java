@@ -93,15 +93,10 @@ public class S3Component {
         }
     }
 
-    /*//업로드 후 URL 추출
-    private String getFileUrl(String fileName){
-        return amazonS3Client.getUrl(bucket,fileName).toString();
-    }*/
 
     //회원의 프로필 이미지 전송
-    public ResponseEntity<Map<String,byte[]>> getProfileImageByMember(Member member) throws Exception{
+    public ResponseEntity<byte[]> getProfileImageByMember(Member member) throws Exception{
 
-        Map<String,byte[]> map = new LinkedHashMap<>();
         String storedFileName;
         log.info(member.getProfileImage());
         if(member.getProfileImage().equals(null)){
@@ -125,8 +120,7 @@ public class S3Component {
         httpHeaders.setContentLength(bytes.length);
         httpHeaders.setContentDispositionFormData("attachment", fileName);
 
-        map.put(member.getClassyNickName(),bytes);
-        return ResponseEntity.ok().headers(httpHeaders).body(map);
+        return ResponseEntity.ok().headers(httpHeaders).body(bytes);
     }
 
 }

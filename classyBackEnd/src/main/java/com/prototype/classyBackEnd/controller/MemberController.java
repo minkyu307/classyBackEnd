@@ -31,12 +31,12 @@ public class MemberController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final ValidationHandler validationHandler;
 
-    @GetMapping(value = "/member/Hello")
+    @GetMapping(value = "/member/hello")
     public ResponseEntity<String> hello(){
         return ResponseEntity.ok().body("TestGood!!");
     }
 
-    @PostMapping(value = "/member/kakaoJoin")
+    @PostMapping(value = "/member/join/kakao")
     public ResponseEntity<Map<String,String>> joinKakaoMember(@RequestBody @Valid CreationRequestMemberVO crm, Errors errors) throws Exception {
 
         Map<String,String> map = new HashMap<>();
@@ -57,7 +57,7 @@ public class MemberController {
         return ResponseEntity.ok().body(map);
     }
 
-    @PostMapping(value = "/member/kakaoLogin")
+    @PostMapping(value = "/member/login/kakao")
     public ResponseEntity<Map<String,String>> loginKakoMember(@RequestBody Member member) throws SQLException {
 
         Map<String ,String> map = new HashMap<>();
@@ -69,7 +69,7 @@ public class MemberController {
         return ResponseEntity.ok().body(map);
     }
 
-    @PostMapping(value = "/member/emailAuthRequest")
+    @PostMapping(value = "/member/email/auth/request")
     public ResponseEntity<Map<String,String>> emailAuthRequest(@RequestBody Member member) throws Exception {
 
         Map<String, String> map = new HashMap<>();
@@ -85,7 +85,7 @@ public class MemberController {
         return ResponseEntity.ok().body(map);
     }
 
-    @PostMapping(value = "/member/emailAuth")
+    @PostMapping(value = "/member/email/auth")
     public ResponseEntity<Map<String, String>> emailAuth(@RequestBody Member member) throws Exception {
 
         Map<String, String> map = new HashMap<>();
@@ -104,7 +104,7 @@ public class MemberController {
         return ResponseEntity.ok().body(map);
     }
 
-    @PostMapping(value = "/member/emailJoin")
+    @PostMapping(value = "/member/join/email")
     public ResponseEntity<Map<String,String>> emailJoin(
             @RequestBody @Valid CreationRequestMemberVO crm, Errors errors) throws Exception {
 
@@ -128,7 +128,7 @@ public class MemberController {
         return ResponseEntity.ok().body(map);
     }
 
-    @PostMapping(value = "/member/emailLogin")
+    @PostMapping(value = "/member/login/email")
     public ResponseEntity<Map<String, String>> emailLogin(@RequestBody Member member) throws Exception {
 
         Map<String, String> map = new LinkedHashMap<>();

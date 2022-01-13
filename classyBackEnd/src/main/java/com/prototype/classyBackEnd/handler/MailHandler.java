@@ -1,5 +1,6 @@
 package com.prototype.classyBackEnd.handler;
 
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -7,8 +8,10 @@ import org.springframework.stereotype.Component;
 import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.xml.transform.Source;
 import java.io.UnsupportedEncodingException;
 
+@Component
 public class MailHandler {
 
     private final JavaMailSender mailSender;
@@ -39,6 +42,14 @@ public class MailHandler {
 
     public void addInline(String contentId, DataSource dataSource) throws MessagingException {
         messageHelper.addInline(contentId, dataSource);
+    }
+
+    public void addInline(String contentId, Resource resource) throws MessagingException{
+        messageHelper.addInline(contentId, resource);
+    }
+
+    public void cleanMessageHelper(){
+        messageHelper=null;
     }
 
     public void send() {
