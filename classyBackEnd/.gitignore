@@ -6,3 +6,4 @@ publickey
 classy.pem
 .gradle
 out/
+*.csv

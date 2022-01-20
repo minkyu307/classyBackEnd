@@ -7,8 +7,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
 import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-@SpringBootTest
 class ClassyBackEndApplicationTests {
 
 	@Autowired
@@ -27,5 +28,18 @@ class ClassyBackEndApplicationTests {
 		Resource resource = resourceLoader.getResource("classpath:static/img.jpg");
 		String path = resource.getFilename();
 		System.out.println("path = " + path);
+	}
+
+	@Test
+	void 메모리해제테스트(){
+		System.out.println("start");
+		doSomeThing();
+		System.out.println("End");
+	}
+
+	void doSomeThing(){
+		Map<String, String> map = new LinkedHashMap();
+		map.put("ok","ok");
+		System.out.println("map = " + map);
 	}
 }

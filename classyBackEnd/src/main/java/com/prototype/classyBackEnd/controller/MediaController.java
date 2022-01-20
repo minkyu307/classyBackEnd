@@ -2,10 +2,14 @@ package com.prototype.classyBackEnd.controller;
 
 import com.prototype.classyBackEnd.component.S3Component;
 import com.prototype.classyBackEnd.domain.Member;
+import com.prototype.classyBackEnd.domain.Video;
 import com.prototype.classyBackEnd.service.MemberService;
+import com.prototype.classyBackEnd.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,15 +22,15 @@ import java.util.Map;
 public class MediaController {
 
     private final MemberService memberService;
+    private final VideoService videoService;
     private final S3Component s3Component;
-    private Map<String, String> strStrMap = new LinkedHashMap<>();
 
 
     @GetMapping(value = "/upload/profileImage")
     public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("img") MultipartFile file,
                                                            @RequestParam("classyNickName") String classyNickName) throws Exception {
 
-        strStrMap.clear();
+        Map<String, String> strStrMap = new LinkedHashMap<>();
         Member member = memberService.findOneByClassyNickName(classyNickName);
 
         s3Component.uploadMediaToS3(file, "classyImage/", member);
@@ -39,7 +43,7 @@ public class MediaController {
     public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("video") MultipartFile file,
                                                            @RequestParam("classyNickName") String classyNickName) throws Exception {
 
-        strStrMap.clear();
+        Map<String, String> strStrMap = new LinkedHashMap<>();
         Member member = memberService.findOneByClassyNickName(classyNickName);
 
         s3Component.uploadMediaToS3(file, "", member);
@@ -57,5 +61,7 @@ public class MediaController {
 
         return s3Component.getProfileImageByMember(member);
     }
+
+
 
 }

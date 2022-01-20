@@ -41,6 +41,8 @@ public class S3Component {
     public void uploadMediaToS3(MultipartFile file, String dirName, Member member) throws Exception{
 
         String fileName = createFileName(file.getOriginalFilename(), dirName);
+        log.info("org={}",file.getOriginalFilename());
+        log.info("name={}",file.getName());
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
@@ -63,7 +65,7 @@ public class S3Component {
         if(type.equals("video/mp4")||type.equals("video/quicktime")){
             Video video = new Video();
             video.setMember(member);
-            video.setTitle(fileName);
+            video.setTitle(fileName.substring(0, fileName.length()-4));
             video.setViews(0L);
             video.setUploadDate(LocalDateTime.now().withNano(0));
             videoService.save(video);

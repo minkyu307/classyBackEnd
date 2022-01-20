@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -17,4 +19,16 @@ public class VideoServiceImpl implements VideoService{
     public void save(Video video) {
         videoDao.save(video);
     }
+
+    @Override
+    public List<Video> getAllVideos() {
+        return videoDao.findAllVideo();
+    }
+
+    @Override
+    public Video getOneVideo() {
+        return videoDao.findAllVideo().get(0);
+    }
+
+
 }
